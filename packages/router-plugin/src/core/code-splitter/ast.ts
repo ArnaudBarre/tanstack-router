@@ -20,6 +20,7 @@ export type ParseAstOptions = {
   code: string
   filename: string
   root: string
+  viteDev: boolean
 }
 
 export function parseAst(opts: ParseAstOptions) {
