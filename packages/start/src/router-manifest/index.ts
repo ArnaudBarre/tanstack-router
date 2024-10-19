@@ -11,6 +11,19 @@ import type { Manifest } from '@tanstack/react-router'
 export function getFullRouterManifest() {
   const routerManifest = tsrGetManifest() as Manifest
 
+
+  // This was not defined when running the start-basic example,
+  // so I added manually that default to get it running
+  // Anyways this manual injection should not be done and for compatibility with other vite plugins
+  // This should be by running vite.transformIndexHtml(url, html) on the ssr output
+  const CLIENT_BASE = process.env.CLIENT_BASE ?? "/_build"
+
+  // if (!CLIENT_BASE) {
+  //   throw new Error(
+  //     'Something went wrong. CLIENT_BASE is not defined in the environment for getFullRouterManifest',
+  //   )
+  // }
+
   const rootRoute = (routerManifest.routes.__root__ =
     routerManifest.routes.__root__ || {})
 
@@ -20,7 +33,12 @@ export function getFullRouterManifest() {
   if (process.env.NODE_ENV === 'development') {
     rootRoute.assets.push({
       tag: 'script',
-      children: `window.__vite_plugin_react_preamble_installed__ = true`,
+      attrs: { type: 'module' },
+      children: `import RefreshRuntime from "${CLIENT_BASE}/@react-refresh";
+RefreshRuntime.injectIntoGlobalHook(window)
+window.$RefreshReg$ = () => {}
+window.$RefreshSig$ = () => (type) => type
+window.__vite_plugin_react_preamble_installed__ = true`,
     })
   }
 
